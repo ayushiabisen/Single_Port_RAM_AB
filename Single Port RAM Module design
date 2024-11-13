@@ -1,0 +1,37 @@
+// Single Port RAM Module design
+
+module single_port_sync_ram
+  # (parameter ADDR_WIDTH = 4,
+     parameter DATA_WIDTH = 32,
+     parameter DEPTH = 16		//total number of memory locations (depth of the RAM).
+    )
+
+  ( 	input 					clk,                 //clk used for synchronization.
+   		input [ADDR_WIDTH-1:0]	addr,                // Address input
+   		inout [DATA_WIDTH-1:0]	data,                // Data input/output
+   		input 					cs,                  // Chip select signal
+   		input 					we,                  // Write enable signal
+   													//if data should be read from RAM.
+   		input 					oe                   // Output enable signal
+   													//if data should be read from RAM.
+  );
+
+  reg [DATA_WIDTH-1:0] 	tmp_data;			// Temporary hold data i.e. read from RAM
+  reg [DATA_WIDTH-1:0] 	mem [DEPTH];		// Memory array declaration
+
+  always @ (posedge clk) 
+    begin
+    if (cs & we)
+      mem[addr] <= data;  				// Write data to memory if cs and we is enabled
+  	end
+
+
+  always @ (posedge clk)
+  begin
+    if (cs & !we)
+      tmp_data <= mem[addr];   // Read data from memory if cs is enable and we not .
+  end
+
+    assign data = cs & oe & !we ? tmp_data : 'hz;   
+  // Drive the data bus with tmp_data if conditions are met, otherwise high impedance
+endmodule
