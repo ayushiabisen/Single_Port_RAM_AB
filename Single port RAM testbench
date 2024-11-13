@@ -1,0 +1,71 @@
+// Single port RAM testbench
+module single_port_tb;
+  parameter ADDR_WIDTH = 4;
+  parameter DATA_WIDTH = 16;
+  parameter DEPTH = 16;
+
+  reg clk;
+  reg cs;
+  reg we;
+  reg oe;
+  reg [ADDR_WIDTH-1:0] addr;
+  wire [DATA_WIDTH-1:0] data;
+  reg [DATA_WIDTH-1:0] tb_data;
+
+  // Instantiate the single-port synchronous RAM
+  single_port_sync_ram #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH), .DEPTH(DEPTH)) u0
+  (
+    .clk(clk),
+    .addr(addr),
+    .data(data),
+    .cs(cs),
+    .we(we),
+    .oe(oe)
+  );
+
+  // Clock generation
+  initial 
+  begin
+    $dumpfile("dump.vcd");
+    $dumpvars(1, single_port_tb);
+    
+    clk = 1'b0; // Initialize clock to 0
+    forever #10 clk = ~clk; // Toggle clock every 10 time units
+  end
+
+  // Drive the data bus
+  assign data = !oe ? tb_data : 'hz;
+
+  initial begin
+    // Initialize signals
+    {cs, we, addr, tb_data, oe} <= 0;
+
+    repeat (2) @ (posedge clk);  // Wait for two clock cycles to stabilize the system.
+
+    // Write Operations
+    for (integer i = 0; i < 2**ADDR_WIDTH; i = i + 1) //Addresses 0 to 15, ADDR_WIDTH is 4
+    begin
+      @(posedge clk); // Wait for clock edge
+      addr <= i; 
+      we <= 1; // Enable write
+      cs <= 1; // Chip select
+      oe <= 0; // Disable output
+      tb_data <= $random; // Random data to write
+    end
+
+    // Ensure to wait for a clock cycle after writing
+    @(posedge clk);
+
+    // Read Operations
+    for (integer i = 0; i < 2**ADDR_WIDTH; i = i + 1) 
+    begin
+      @(posedge clk); // Wait for clock edge
+      addr <= i; 
+      we <= 0; // Disable write
+      cs <= 1; // Chip select
+      oe <= 1; // Enable output
+    end
+
+    #20 $finish; // Finish simulation after a delay
+  end
+endmodule
