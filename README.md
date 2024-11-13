@@ -23,3 +23,4 @@ Applications:
 Data Buffers: Used in systems requiring temporary storage of data before processing.
 Signal Processing: Suitable for applications in digital signal processing where quick access to stored data is essential.
 Microcontroller Memory: Acts as a data storage solution in microcontrollers and embedded systems.
+To see  the result in EDA Playground:  https://www.edaplayground.com/x/75Nx
